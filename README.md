@@ -13,37 +13,49 @@ The goal is not to build polished simulations, but to:
 - identify reusable behavioral patterns
 - test abstraction boundaries
 - expose friction points in Mesa’s current API
-- evaluate how far we can push general-purpose behavior modeling
+- evaluate how far general-purpose behavior modeling can go
 
 ---
 
 ## Core Idea
 
-Most Mesa models reimplement the same logic:
+Most Mesa models repeatedly implement the same logic:
 
 - action selection
 - decision heuristics
 - behavioral state transitions
 - regime switching
-- history / memory effects
+- memory / history effects
 
-This project extracts those into a **reusable framework layer**:
+This project extracts these into a **reusable behavior layer**:
 
-- `Action` → atomic behavior unit
+- `Action` → atomic unit of behavior (score + execution)
 - `SoftmaxPolicy` → stochastic decision mechanism
-- `BehaviorMixin` → agent-level decision pipeline
+- `BehaviorMixin` → reusable decision pipeline for agents
 
-Then validates them across multiple domains.
+These abstractions are then validated across different domains.
+
+---
+
+## Why This Is Not Just Another Mesa Model
+
+This repository focuses on **behavior abstraction**, not domain modeling.
+
+Instead of building a single simulation, it explores:
+
+- what parts of agent logic are reusable
+- where Mesa forces manual duplication
+- how decision pipelines can be standardized
+
+This makes it closer to a **framework exploration** than a model implementation.
 
 ---
 
 ## Repository Structure
-
-
 framework/
 action.py # Base Action abstraction
-policy.py # Softmax-based decision policy
-behavior.py # Reusable agent behavior pipeline
+policy.py # Softmax decision policy
+behavior.py # Agent behavior pipeline
 
 models/
 behavioral_survival/
@@ -62,17 +74,32 @@ notes/
 comparison_notes.md
 framework_notes.md
 
+requirements.txt
+
 
 ---
 
 ## Models
 
 ### 🧠 Needs-Based Survival
-A multi-drive agent system with:
 
-- hunger / fear / energy competition
-- regime switching (survival / recovery / panic)
-- spatial environment (food + danger)
+A multi-drive agent system where agents balance:
+
+- hunger
+- fear
+- energy
+
+Environment includes:
+
+- food sources
+- danger zones
+
+Features:
+
+- competing drives
+- regime switching
+- spatial interaction
+- stochastic policy
 - emergent survival dynamics
 
 ➡️ Strong validation of behavior abstraction layer.
@@ -80,13 +107,27 @@ A multi-drive agent system with:
 ---
 
 ### 🌐 Information Behavior Model
-Agents interacting with information through:
 
-- sharing / verifying / ignoring / exploring
-- confidence / curiosity / social pressure
-- broadcast / cautious / passive regimes
+Agents interact with information through:
 
-➡️ Cross-domain validation with different dynamics.
+- sharing
+- verifying
+- ignoring
+- exploring
+
+Internal states:
+
+- curiosity
+- confidence
+- social pressure
+
+Features:
+
+- social influence dynamics
+- regime switching (broadcast / cautious / passive)
+- stochastic behavior selection
+
+➡️ Cross-domain validation of the same behavioral pipeline.
 
 ---
 
@@ -98,22 +139,27 @@ The same behavioral pipeline works across domains:
 scores → softmax → action → state update → regime shift
 
 
-BUT:
+However:
 
-- domain-specific scoring is still manual
+- scoring functions remain domain-specific
 - regime logic is duplicated
 - diagnostics are ad-hoc
 
-This indicates **partial abstraction success** but also clear extension points.
+This indicates **partial abstraction success**, with clear directions for generalization.
 
 ---
 
 ## Running the Models
-
-From project root:
 
 ```bash
 source .venv/bin/activate
 
 solara run models/behavioral_survival/app.py
 solara run models/behavioral_information/app.py
+
+
+
+Author:
+
+Rodion Omelich
+GSoC 2026 Applicant
