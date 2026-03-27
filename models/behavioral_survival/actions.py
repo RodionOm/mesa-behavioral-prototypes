@@ -6,7 +6,7 @@ class HideAction(Action):
 
     def score(self, agent):
         return max(
-            0.0,
+            0.01,
             agent.fear_weight * (agent.fear ** 2)
             + 0.30 * agent.recent_danger
             + 0.20 * agent.get_neighbor_fear()
@@ -28,7 +28,7 @@ class RestAction(Action):
     def score(self, agent):
         low_energy = (1.0 - agent.energy) ** 2
         return max(
-            0.0,
+            0.01,
             agent.energy_weight * low_energy
             + 0.08 * max(0.0, 0.4 - agent.fear)
             + agent.get_action_persistence(self.name)
@@ -47,7 +47,7 @@ class SearchFoodAction(Action):
 
     def score(self, agent):
         return max(
-            0.0,
+            0.01,
             agent.hunger_weight * (agent.hunger ** 2)
             - 0.25 * agent.fear
             - 0.15 * (1.0 - agent.energy)
@@ -82,7 +82,7 @@ class WanderAction(Action):
 
     def score(self, agent):
         return max(
-            0.0,
+            0.01,
             agent.model.wander_bias
             + 0.04 * (1.0 - agent.hunger)
             + 0.03 * agent.energy

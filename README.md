@@ -157,7 +157,7 @@ source .venv/bin/activate
 solara run models/behavioral_survival/app.py
 solara run models/behavioral_information/app.py
 
-
+```
 
 Author:
 

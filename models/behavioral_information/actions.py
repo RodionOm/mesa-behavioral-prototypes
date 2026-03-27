@@ -6,7 +6,7 @@ class ShareAction(Action):
 
     def score(self, agent):
         return max(
-            0.0,
+            0.01,
             0.45 * (agent.confidence ** 2)
             + 0.30 * agent.social_pressure
             + 0.15 * agent.topic_salience
@@ -28,7 +28,7 @@ class VerifyAction(Action):
     def score(self, agent):
         uncertainty = 1.0 - agent.confidence
         return max(
-            0.0,
+            0.01,
             0.45 * agent.curiosity
             + 0.30 * (uncertainty ** 2)
             + 0.15 * agent.topic_salience
@@ -48,7 +48,7 @@ class IgnoreAction(Action):
 
     def score(self, agent):
         return max(
-            0.0,
+            0.01,
             0.35 * (1.0 - agent.curiosity)
             + 0.20 * (1.0 - agent.social_pressure)
             + 0.15 * (1.0 - agent.topic_salience)
@@ -67,7 +67,7 @@ class ExploreAction(Action):
 
     def score(self, agent):
         return max(
-            0.0,
+            0.01,
             0.40 * agent.curiosity
             + 0.20 * (1.0 - agent.confidence)
             + 0.10 * (1.0 - agent.social_pressure)

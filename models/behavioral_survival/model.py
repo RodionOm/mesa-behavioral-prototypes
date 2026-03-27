@@ -19,38 +19,24 @@ class NeedsAgent(CellAgent, BehaviorMixin):
         if cell is not None:
             self.cell = cell
 
-        # Internal state
         self.hunger = self.random.uniform(0.20, 0.55)
         self.fear = self.random.uniform(0.08, 0.35)
         self.energy = self.random.uniform(0.45, 0.90)
 
-        # Motivational weights
         self.hunger_weight = model.hunger_weight
         self.fear_weight = model.fear_weight
         self.energy_weight = model.low_energy_weight
 
-        # Meta-state
         self.current_regime = "neutral"
         self.recent_danger = 0.0
         self.is_dead = False
         self.steps_alive = 0
 
-        self.init_behavior_state(default_action="rest", history_length=model.history_length)
-
-        self.last_scores = {
-            "hide": 0.0,
-            "rest": 0.0,
-            "search_food": 0.0,
-            "wander": 0.0,
-        }
-        self.last_probabilities = {
-            "hide": 0.0,
-            "rest": 0.0,
-            "search_food": 0.0,
-            "wander": 0.0,
-        }
-
-    # ---------- Spatial helpers ----------
+        self.init_behavior_state(
+            default_action="rest",
+            history_length=model.history_length,
+            action_names=["hide", "rest", "search_food", "wander"],
+        )
 
     def coord(self):
         return self.cell.coordinate
@@ -133,16 +119,12 @@ class NeedsAgent(CellAgent, BehaviorMixin):
         safest = min(neighbors, key=danger_score)
         self.cell = safest
 
-    # ---------- Behavior helpers ----------
-
     def get_action_cost(self, action_name):
         if action_name == "search_food":
             return 0.04 * (1.0 - self.energy)
         if action_name == "hide":
             return 0.02
         return 0.0
-
-    # ---------- Internal dynamics ----------
 
     def update_regime(self):
         if self.fear > 0.60:
@@ -205,21 +187,20 @@ class NeedsAgent(CellAgent, BehaviorMixin):
         self.update_regime()
         self.adapt_weights()
 
-        # Domain-specific interrupt
         if self.fear > self.model.hide_interrupt_threshold:
             scores = self.model.policy.evaluate(self)
             probs = {k: 0.0 for k in scores}
             probs["hide"] = 1.0
             action = next(a for a in self.model.actions if a.name == "hide")
+
+            self.last_action = action.name
+            self.last_scores = scores
+            self.last_probabilities = probs
+
+            self.act(action)
+            self.update_behavior_history(action.name)
         else:
-            action, scores, probs = self.model.policy.select_action(self)
-
-        self.last_action = action.name
-        self.last_scores = scores
-        self.last_probabilities = probs
-
-        action.execute(self)
-        self.update_history(action.name)
+            self.behavioral_step()
 
 
 class NeedsModel(Model):

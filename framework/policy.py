@@ -2,7 +2,12 @@ import math
 
 
 class SoftmaxPolicy:
-    """Reusable stochastic policy for action selection."""
+    """
+    Reusable stochastic policy for action selection.
+
+    This policy is intentionally generic enough for action-oriented agents,
+    but it does not assume that all behavioral paradigms should use softmax.
+    """
 
     def __init__(self, actions, temperature=0.12, score_scale=6.0, entropy_bonus=0.02):
         self.actions = actions
@@ -26,6 +31,10 @@ class SoftmaxPolicy:
             for k, v in scaled.items()
         }
         total = sum(exp_scores.values())
+
+        if total == 0:
+            n = len(exp_scores)
+            return {k: 1.0 / n for k in exp_scores}
 
         return {k: v / total for k, v in exp_scores.items()}
 

@@ -30,20 +30,11 @@ class InfoAgent(CellAgent, BehaviorMixin):
 
         self.current_regime = "neutral"
 
-        self.init_behavior_state(default_action="ignore", history_length=model.history_length)
-
-        self.last_scores = {
-            "share": 0.0,
-            "verify": 0.0,
-            "ignore": 0.0,
-            "explore": 0.0,
-        }
-        self.last_probabilities = {
-            "share": 0.0,
-            "verify": 0.0,
-            "ignore": 0.0,
-            "explore": 0.0,
-        }
+        self.init_behavior_state(
+            default_action="ignore",
+            history_length=model.history_length,
+            action_names=["share", "verify", "ignore", "explore"],
+        )
 
     def get_neighbor_cells(self):
         return list(self.cell.neighborhood)
@@ -111,14 +102,20 @@ class InfoAgent(CellAgent, BehaviorMixin):
         self.update_regime()
         self.adapt_weights()
 
-        action, scores, probs = self.model.policy.select_action(self)
+        if self.confidence < self.model.verify_interrupt_threshold:
+            scores = self.model.policy.evaluate(self)
+            probs = {k: 0.0 for k in scores}
+            probs["verify"] = 1.0
+            action = next(a for a in self.model.actions if a.name == "verify")
 
-        self.last_action = action.name
-        self.last_scores = scores
-        self.last_probabilities = probs
+            self.last_action = action.name
+            self.last_scores = scores
+            self.last_probabilities = probs
 
-        action.execute(self)
-        self.update_history(action.name)
+            self.act(action)
+            self.update_behavior_history(action.name)
+        else:
+            self.behavioral_step()
 
 
 class InformationBehaviorModel(Model):
@@ -136,6 +133,7 @@ class InformationBehaviorModel(Model):
         temperature=0.14,
         score_scale=5.0,
         history_length=8,
+        verify_interrupt_threshold=0.22,
         rng=None,
     ):
         super().__init__(rng=rng)
@@ -151,6 +149,7 @@ class InformationBehaviorModel(Model):
         self.confidence_drift = confidence_drift
         self.memory_penalty_weight = memory_penalty_weight
         self.history_length = history_length
+        self.verify_interrupt_threshold = verify_interrupt_threshold
 
         self.grid = OrthogonalMooreGrid(
             (width, height),

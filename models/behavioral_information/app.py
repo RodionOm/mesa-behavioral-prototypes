@@ -44,6 +44,7 @@ model_params = {
     "temperature": Slider("Policy Temperature", 0.14, 0.02, 1.0, 0.01),
     "score_scale": Slider("Score Scale", 5.0, 1.0, 15.0, 0.5),
     "memory_penalty_weight": Slider("Memory Penalty", 0.15, 0.0, 0.5, 0.01),
+    "verify_interrupt_threshold": Slider("Verify Interrupt Threshold", 0.22, 0.05, 0.50, 0.01),
 }
 
 model = InformationBehaviorModel()
